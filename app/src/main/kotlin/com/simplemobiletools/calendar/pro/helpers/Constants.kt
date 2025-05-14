@@ -147,9 +147,9 @@ const val AUTO_BACKUP_PAST_ENTRIES = "auto_backup_past_entries"
 const val LAST_AUTO_BACKUP_TIME = "last_auto_backup_time"
 
 // repeat_rule for monthly and yearly repetition
-const val REPEAT_SAME_DAY = 1                           // i.e. 25th every month, or 3rd june (if yearly repetition)
+//const val REPEAT_SAME_DAY = 1                           // i.e. 25th every month, or 3rd june (if yearly repetition)
 const val REPEAT_ORDER_WEEKDAY_USE_LAST = 2             // i.e. every last sunday. 4th if a month has 4 sundays, 5th if 5 (or last sunday in june, if yearly)
-const val REPEAT_LAST_DAY = 3                           // i.e. every last day of the month
+//const val REPEAT_LAST_DAY = 3                           // i.e. every last day of the month
 const val REPEAT_ORDER_WEEKDAY = 4                      // i.e. every 4th sunday, even if a month has 4 sundays only (will stay 4th even at months with 5)
 
 // special event and task flags
@@ -264,6 +264,25 @@ const val EVENT_TYPE_ID = "EVENT_TYPE_ID"
 const val EVENT_CALENDAR_ID = "EVENT_CALENDAR_ID"
 const val IS_NEW_EVENT = "IS_NEW_EVENT"
 const val EVENT_COLOR = "EVENT_COLOR"
+
+
+
+// helpers/Constants.kt
+const val REPEAT_SAME_DAY = 0
+const val REPEAT_LAST_DAY = -1
+const val MAX_RECURRING_EVENTS = 365 * 5 // 5 years safety limit
+
+enum class Frequency {
+    DAILY, WEEKLY, MONTHLY, YEARLY, CUSTOM
+}
+
+fun Int.getFrequency() = when {
+    this == 0 -> Frequency.CUSTOM
+    this % 7 == 0 -> Frequency.WEEKLY
+    this % 30 == 0 -> Frequency.MONTHLY
+    this % 365 == 0 -> Frequency.YEARLY
+    else -> Frequency.DAILY
+}
 
 // actions
 const val ACTION_MARK_COMPLETED = "ACTION_MARK_COMPLETED"

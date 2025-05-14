@@ -41,11 +41,23 @@ data class Event(
     @ColumnInfo(name = "source") var source: String = SOURCE_SIMPLE_CALENDAR,
     @ColumnInfo(name = "availability") var availability: Int = 0,
     @ColumnInfo(name = "color") var color: Int = 0,
+
+
     @ColumnInfo(name = "type") var type: Int = TYPE_EVENT
+
+
 ) : Serializable {
 
     companion object {
         private const val serialVersionUID = -32456795132345616L
+
+        const val MONDAY_BIT = 1 shl 0
+        const val TUESDAY_BIT = 1 shl 1
+        const val WEDNESDAY_BIT = 1 shl 2
+        const val THURSDAY_BIT = 1 shl 3
+        const val FRIDAY_BIT = 1 shl 4
+        const val SATURDAY_BIT = 1 shl 5
+        const val SUNDAY_BIT = 1 shl 6
     }
 
     fun addIntervalTime(original: Event) {
@@ -209,9 +221,18 @@ data class Event(
         } else {
             DateTimeZone.getDefault().id
         }
+
+
     }
 
     fun isAttendeeInviteDeclined() = attendees.any {
         it.isMe && it.status == Attendees.ATTENDEE_STATUS_DECLINED
+
     }
+    // models/Event.kt
+    val DateTime.seconds: Long
+        get() = this.millis / 1000L
+
+
+
 }

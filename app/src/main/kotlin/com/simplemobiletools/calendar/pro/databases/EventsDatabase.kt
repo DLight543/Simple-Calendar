@@ -22,7 +22,7 @@ import com.simplemobiletools.calendar.pro.models.Widget
 import com.simplemobiletools.commons.extensions.getProperPrimaryColor
 import java.util.concurrent.Executors
 
-@Database(entities = [Event::class, EventType::class, Widget::class, Task::class], version = 8)
+@Database(entities = [Event::class, EventType::class, Widget::class, Task::class], version = 9)
 @TypeConverters(Converters::class)
 abstract class EventsDatabase : RoomDatabase() {
 
@@ -55,6 +55,7 @@ abstract class EventsDatabase : RoomDatabase() {
                             .addMigrations(MIGRATION_5_6)
                             .addMigrations(MIGRATION_6_7)
                             .addMigrations(MIGRATION_7_8)
+                            .addMigrations(MIGRATION_8_9)
                             .build()
                         db!!.openHelper.setWriteAheadLoggingEnabled(true)
                     }
@@ -134,6 +135,34 @@ abstract class EventsDatabase : RoomDatabase() {
                 database.apply {
                     execSQL("ALTER TABLE event_types ADD COLUMN type INTEGER NOT NULL DEFAULT 0")
                 }
+            }
+        }
+        private val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                // Safe add columns
+                if (!columnExists(database, "events", "repeat_interval")) {
+                    database.execSQL("ALTER TABLE events ADD COLUMN repeat_interval INTEGER NOT NULL DEFAULT 0")
+                }
+
+                if (!columnExists(database, "events", "repeat_rule")) {
+                    database.execSQL("ALTER TABLE events ADD COLUMN repeat_rule INTEGER NOT NULL DEFAULT 0")
+                }
+
+                if (!columnExists(database, "events", "repeat_limit")) {
+                    database.execSQL("ALTER TABLE events ADD COLUMN repeat_limit INTEGER NOT NULL DEFAULT 0")
+                }
+            }
+
+            private fun columnExists(database: SupportSQLiteDatabase, table: String, column: String): Boolean {
+                val cursor = database.query("PRAGMA table_info($table)")
+                while (cursor.moveToNext()) {
+                    if (cursor.getString(1) == column) {
+                        cursor.close()
+                        return true
+                    }
+                }
+                cursor.close()
+                return false
             }
         }
     }

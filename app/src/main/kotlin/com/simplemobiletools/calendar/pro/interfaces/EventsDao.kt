@@ -136,4 +136,7 @@ interface EventsDao {
 
     @Query("DELETE FROM events WHERE source = :source AND import_id = :importId")
     fun deleteBirthdayAnniversary(source: String, importId: String): Int
+
+    @Query("SELECT * FROM events WHERE start_ts BETWEEN :start AND :end")
+    fun getEventsBetweenTimestamps(start: Long, end: Long): List<Event>
 }

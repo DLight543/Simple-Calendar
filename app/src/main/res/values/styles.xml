@@ -37,4 +37,8 @@
     <style name="DatePickerDarkStyle">
         <item name="android:textColorPrimary">@color/theme_dark_text_color</item>
     </style>
+    <style name="ChipStyle" parent="Widget.MaterialComponents.Chip.Choice">
+        <item name="chipStrokeWidth">1dp</item>
+        <item name="chipCornerRadius">8dp</item>
+    </style>
 </resources>

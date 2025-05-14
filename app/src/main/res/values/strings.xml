@@ -306,4 +306,52 @@
         Haven't found some strings? There's more at
         https://github.com/SimpleMobileTools/Simple-Commons/tree/master/commons/src/main/res
     -->
+    <string name="monday" translatable="false">Mon</string>
+    <string name="tuesday" translatable="false">Tue</string>
+    <string name="wednesday" translatable="false">Tue</string>
+    <string name="thursday" translatable="false">Tue</string>
+    <string name="friday" translatable="false">Tue</string>
+    <string name="saturday" translatable="false">Tue</string>
+    <string name="sunday" translatable="false">Tue</string>
+    <!-- ... other days -->
+    <string name="every" translatable="false">Every</string>
+    <string name="never" translatable="false">Never</string>
+    <string name="after_occurrences" translatable="false">After X occurrences</string>
+    <string name="end_on_date" translatable="false">End on date</string>
+    <plurals name="occurrences" translatable="false">
+        <item quantity="one">occurrence</item>
+        <item quantity="other">occurrences</item>
+    </plurals>
+    <string-array name="recurrence_frequencies">
+        <item>Daily</item>
+        <item>Weekly</item>
+        <item>Monthly</item>
+        <item>Yearly</item>
+    </string-array>
+    <string name="monday_short" translatable="false">Mon</string>
+    <string name="tuesday_short" translatable="false">Tue</string>
+    <string name="wednesday_short" translatable="false">Wed</string>
+    <string name="thursday_short" translatable="false">Thu</string>
+    <string name="friday_short" translatable="false">Fri</string>
+    <string name="saturday_short" translatable="false">Sat</string>
+    <string name="sunday_short" translatable="false">Sun</string>
+
+    <string name="days" translatable="false">Days</string>
+    <string name="weeks" translatable="false">Weeks</string>
+    <string name="months" translatable="false">Months</string>
+    <string name="years" translatable="false">Years</string>
+    <string name="recurrence_occurrences" translatable="false">times</string>
+    <string name="occurrences" translatable="false">times</string>
+
+    <plurals name="recurrence_occurrences" translatable="false">
+        <item quantity="one">%d occurrence</item>
+        <item quantity="other">%d occurrences</item>
+    </plurals>
+
+
+    <string name="end_after_occurrences" translatable="false">After occurrences</string>
+
+
+
+
 </resources>

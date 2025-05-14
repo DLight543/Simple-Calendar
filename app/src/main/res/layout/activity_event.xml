@@ -346,99 +346,261 @@
                 android:background="@color/divider_grey"
                 android:importantForAccessibility="no" />
 
+            <!-- Repetition Image -->
             <ImageView
                 android:id="@+id/event_repetition_image"
                 android:layout_width="@dimen/smaller_icon_size"
                 android:layout_height="@dimen/smaller_icon_size"
-                android:layout_below="@+id/event_date_time_divider"
-                android:layout_alignTop="@+id/event_repetition"
-                android:layout_alignBottom="@+id/event_repetition"
+                android:layout_below="@+id/event_reminder_divider"
+                android:layout_alignTop="@+id/event_repetition_container"
+                android:layout_alignBottom="@+id/event_repetition_container"
                 android:layout_marginStart="@dimen/normal_margin"
                 android:padding="@dimen/medium_margin"
                 android:src="@drawable/ic_repeat_vector" />
 
-            <com.simplemobiletools.commons.views.MyTextView
-                android:id="@+id/event_repetition"
+            <!-- Main Repetition Container -->
+            <LinearLayout
+                android:id="@+id/event_repetition_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/event_reminder_divider"
-                android:layout_marginStart="@dimen/small_margin"
                 android:layout_toEndOf="@+id/event_repetition_image"
-                android:background="?attr/selectableItemBackground"
+                android:orientation="vertical"
                 android:paddingTop="@dimen/normal_margin"
                 android:paddingEnd="@dimen/activity_margin"
-                android:paddingBottom="@dimen/normal_margin"
-                android:textSize="@dimen/day_text_size"
-                tools:text="@string/no_repetition" />
+                android:paddingBottom="@dimen/normal_margin">
 
-            <RelativeLayout
-                android:id="@+id/event_repetition_rule_holder"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/event_repetition"
-                android:layout_alignStart="@+id/event_repetition"
-                android:background="?attr/selectableItemBackground"
-                android:visibility="gone">
-
-                <com.simplemobiletools.commons.views.MyTextView
-                    android:id="@+id/event_repetition_rule_label"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:clickable="false"
-                    android:paddingTop="@dimen/activity_margin"
-                    android:paddingBottom="@dimen/activity_margin"
-                    android:text="@string/repeat_on"
-                    android:textSize="@dimen/day_text_size" />
-
-                <com.simplemobiletools.commons.views.MyTextView
-                    android:id="@+id/event_repetition_rule"
+                <!-- Header -->
+                <RelativeLayout
+                    android:id="@+id/event_repetition_header"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_toEndOf="@+id/event_repetition_rule_label"
-                    android:clickable="false"
-                    android:gravity="end"
-                    android:padding="@dimen/activity_margin"
-                    android:text="@string/every_day"
-                    android:textSize="@dimen/day_text_size" />
-            </RelativeLayout>
+                    android:background="?attr/selectableItemBackground">
 
-            <RelativeLayout
-                android:id="@+id/event_repetition_limit_holder"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/event_repetition_rule_holder"
-                android:layout_alignStart="@+id/event_repetition"
-                android:background="?attr/selectableItemBackground"
-                android:visibility="gone">
+                    <com.simplemobiletools.commons.views.MyTextView
+                        android:id="@+id/event_repetition"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="@dimen/day_text_size"
+                        tools:text="@string/no_repetition" />
 
-                <com.simplemobiletools.commons.views.MyTextView
-                    android:id="@+id/event_repetition_limit_label"
+                    <ImageView
+                        android:id="@+id/event_repetition_expand_icon"
+                        android:layout_width="@dimen/smaller_icon_size"
+                        android:layout_height="@dimen/smaller_icon_size"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginEnd="@dimen/small_margin"
+                        android:src="@drawable/ic_arrow_down" />
+                </RelativeLayout>
+
+                <!-- Advanced Options -->
+                <LinearLayout
+                    android:id="@+id/event_repetition_advanced"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_toStartOf="@+id/event_repetition_limit"
-                    android:clickable="false"
-                    android:paddingTop="@dimen/activity_margin"
-                    android:paddingBottom="@dimen/activity_margin"
-                    android:text="@string/repeat_till"
-                    android:textSize="@dimen/day_text_size" />
+                    android:orientation="vertical"
+                    android:visibility="gone"
+                    android:paddingTop="@dimen/normal_margin">
 
-                <com.simplemobiletools.commons.views.MyTextView
-                    android:id="@+id/event_repetition_limit"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:clickable="false"
-                    android:padding="@dimen/activity_margin"
-                    android:text="@string/forever"
-                    android:textSize="@dimen/day_text_size" />
-            </RelativeLayout>
+                    <!-- Add this inside the event_repetition_advanced LinearLayout -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:paddingStart="@dimen/small_margin"
+                        android:paddingTop="@dimen/normal_margin">
 
+                        <!-- Frequency Spinner -->
+                        <Spinner
+                            android:id="@+id/recurrence_frequency"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:entries="@array/recurrence_frequencies"
+                            android:spinnerMode="dropdown"/>
+
+                        <!-- Interval Picker -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginTop="@dimen/normal_margin">
+
+                            <NumberPicker
+                                android:id="@+id/interval_picker"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"/>
+
+                            <TextView
+                                android:id="@+id/interval_suffix_text"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="2"
+                                android:textSize="@dimen/day_text_size"
+                                android:paddingStart="@dimen/small_margin"
+                                android:text="@string/days"/>
+                        </LinearLayout>
+
+                        <!-- Weekly Days Chip Group -->
+                        <com.google.android.material.chip.ChipGroup
+                            android:id="@+id/weekly_days_group"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/normal_margin"
+                            app:singleSelection="false">
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/mon_chip"
+                                style="@style/Widget.MaterialComponents.Chip.Choice"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/monday_short"/>
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/tue_chip"
+                                style="@style/Widget.MaterialComponents.Chip.Choice"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/tuesday_short"/>
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/wed_chip"
+                                style="@style/Widget.MaterialComponents.Chip.Choice"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/wednesday_short"/>
+
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/thu_chip"
+                                style="@style/Widget.MaterialComponents.Chip.Choice"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/thursday_short"/>
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/fri_chip"
+                                style="@style/Widget.MaterialComponents.Chip.Choice"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/friday_short"/>
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/sat_chip"
+                                style="@style/Widget.MaterialComponents.Chip.Choice"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/saturday_short"/>
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/sun_chip"
+                                style="@style/Widget.MaterialComponents.Chip.Choice"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/sunday_short"/>
+
+                            <!-- Repeat for other days with IDs:
+                                 tue_chip, wed_chip, thu_chip,
+                                 fri_chip, sat_chip, sun_chip -->
+                        </com.google.android.material.chip.ChipGroup>
+
+                        <!-- End Condition Radio Group -->
+                        <RadioGroup
+                            android:id="@+id/end_condition_group"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/normal_margin"
+                            android:orientation="vertical">
+
+                            <RadioButton
+                                android:id="@+id/end_never"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/never"/>
+
+                            <RadioButton
+                                android:id="@+id/end_after_occurrences"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/end_after_occurrences"/>
+
+                            <RadioButton
+                                android:id="@+id/end_on_date"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/end_on_date"/>
+                        </RadioGroup>
+
+                        <NumberPicker
+                            android:id="@+id/occurrence_count"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"/>
+
+                        <TextView
+                            android:id="@+id/selected_end_date"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            tools:text="2025-12-31"/>
+
+
+                        <!-- Rule/Limit Display -->
+                        <LinearLayout
+                            android:id="@+id/event_repetition_rule_holder"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginTop="@dimen/normal_margin">
+
+                            <TextView
+                                android:id="@+id/event_repetition_rule_label"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/repeat_on"/>
+
+                            <TextView
+                                android:id="@+id/event_repetition_rule"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:textSize="@dimen/day_text_size"
+                                android:paddingStart="@dimen/small_margin"/>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/event_repetition_limit_holder"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginTop="@dimen/small_margin">
+
+
+
+
+                            <TextView
+                                android:id="@+id/event_repetition_limit_label"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/repeat"/>
+
+                            <TextView
+                                android:id="@+id/event_repetition_limit"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:textSize="@dimen/day_text_size"
+                                android:paddingStart="@dimen/small_margin"/>
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Divider -->
             <ImageView
                 android:id="@+id/event_repetition_divider"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/divider_height"
-                android:layout_below="@+id/event_repetition_limit_holder"
+                android:layout_below="@+id/event_repetition_container"
                 android:layout_marginTop="@dimen/medium_margin"
                 android:background="@color/divider_grey"
                 android:importantForAccessibility="no" />

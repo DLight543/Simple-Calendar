@@ -13,6 +13,9 @@ import com.simplemobiletools.commons.extensions.getProperPrimaryColor
 import com.simplemobiletools.commons.extensions.toast
 import com.simplemobiletools.commons.helpers.CHOPPED_LIST_DEFAULT_SIZE
 import com.simplemobiletools.commons.helpers.ensureBackgroundThread
+import org.joda.time.DateTime // Add missing import
+
+
 
 class EventsHelper(val context: Context) {
     private val config = context.config
@@ -639,5 +642,28 @@ class EventsHelper(val context: Context) {
 
         events = events.distinctBy { it.id } as ArrayList<Event>
         return events
+    }
+    // helpers/EventsHelper.kt
+    fun getEventsWithRecurrence(start: Long, end: Long): List<Event> {
+        val startDate = DateTime(start * 1000L)
+        val endDate = DateTime(end * 1000L)
+
+        // Replace with your actual DAO method name
+        val baseEvents = eventsDB.getEventsBetweenTimestamps(start, end)
+
+        return baseEvents.flatMap { event ->
+            if (event.repeatInterval == 0) {
+                listOf(event)
+            } else {
+                RecurrenceHelper().getOccurrences(event).map { date ->
+                    event.copy(
+                        startTS = date.seconds(),
+                        endTS = date.seconds() + (event.endTS - event.startTS)
+                    )
+                }
+            }
+        }.filter {
+            it.startTS >= start && it.endTS <= end
+        }
     }
 }

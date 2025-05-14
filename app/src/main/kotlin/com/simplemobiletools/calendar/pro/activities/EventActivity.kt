@@ -46,6 +46,15 @@ import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import java.util.TimeZone
 import java.util.regex.Pattern
+// Add these imports at the top:
+import android.widget.AdapterView
+
+import android.widget.Spinner
+import android.widget.NumberPicker
+import android.widget.RadioGroup
+import com.google.android.material.chip.ChipGroup
+
+
 
 class EventActivity : SimpleActivity() {
     private val LAT_LON_PATTERN = "^[-+]?([1-8]?\\d(\\.\\d+)?|90(\\.0+)?)([,;])\\s*[-+]?(180(\\.0+)?|((1[0-7]\\d)|([1-9]?\\d))(\\.\\d+)?)\$"
@@ -78,6 +87,8 @@ class EventActivity : SimpleActivity() {
     private var mOriginalEndTS = 0L
     private var mIsNewEvent = true
     private var mEventColor = 0
+
+    private var selectedEndDate = DateTime.now().plusYears(1)
 
     private lateinit var mEventStartDateTime: DateTime
     private lateinit var mEventEndDateTime: DateTime
@@ -289,8 +300,10 @@ class EventActivity : SimpleActivity() {
 
         eventAllDay.setOnCheckedChangeListener { _, isChecked -> toggleAllDay(isChecked) }
         eventRepetition.setOnClickListener { showRepeatIntervalDialog() }
-        eventRepetitionRuleHolder.setOnClickListener { showRepetitionRuleDialog() }
-        eventRepetitionLimitHolder.setOnClickListener { showRepetitionTypePicker() }
+        binding.recurrenceFrequency
+        binding.intervalPicker
+        binding.weeklyDaysGroup
+        binding.endConditionGroup
 
         eventReminder1.setOnClickListener {
             handleNotificationAvailability {
@@ -674,8 +687,21 @@ class EventActivity : SimpleActivity() {
     private fun showRepetitionRuleDialog() {
         hideKeyboard()
         when {
-            mRepeatInterval.isXWeeklyRepetition() -> RepeatRuleWeeklyDialog(this, mRepeatRule) {
-                setRepeatRule(it)
+            mRepeatInterval.isXWeeklyRepetition() -> {
+                // Pre-select chips based on mRepeatRule
+                binding.weeklyDaysGroup.check(
+                    when {
+                        mRepeatRule and MONDAY_BIT != 0 -> R.id.mon_chip
+                        mRepeatRule and TUESDAY_BIT != 0 -> R.id.tue_chip
+                        mRepeatRule and WEDNESDAY_BIT != 0 -> R.id.wed_chip
+                        mRepeatRule and THURSDAY_BIT != 0 -> R.id.thu_chip
+                        mRepeatRule and FRIDAY_BIT != 0 -> R.id.fri_chip
+                        mRepeatRule and SATURDAY_BIT != 0 -> R.id.sat_chip
+                        mRepeatRule and SUNDAY_BIT != 0 -> R.id.sun_chip
+                        // ... other days
+                        else -> -1
+                    }
+                )
             }
 
             mRepeatInterval.isXMonthlyRepetition() -> {
@@ -1210,6 +1236,20 @@ class EventActivity : SimpleActivity() {
     }
 
     private fun saveEvent() {
+        // Add validation for recurrence rules
+        if (mRepeatInterval > 0) {
+            if (mRepeatInterval.isXWeeklyRepetition() && mRepeatRule == 0) {
+                toast("Select at least one day for weekly recurrence")
+                return
+            }
+        }
+        mEvent.apply {
+            repeatInterval = binding.intervalPicker.value
+            repeatRule = calculateRepeatRule() // Your existing bitmask method
+            repeatLimit = calculateRepeatLimit() // Your existing method
+        }
+
+
         val newTitle = binding.eventTitle.value
         if (newTitle.isEmpty()) {
             toast(R.string.title_empty)
@@ -1545,6 +1585,200 @@ class EventActivity : SimpleActivity() {
                 mEventEndDateTime.minuteOfHour,
                 config.use24HourFormat
             ).show()
+        }
+    }
+
+    //edit
+    private fun setupRecurrenceUI() = binding.apply {
+        // 1. Frequency Spinner Listener
+        recurrenceFrequency.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val isWeekly = position == Frequency.WEEKLY.ordinal
+                weeklyDaysGroup.visibility = if (isWeekly) View.VISIBLE else View.GONE
+
+                // Update interval suffix based on frequency
+                val intervalSuffix = when (position) {
+                    Frequency.DAILY.ordinal -> getString(R.string.days)
+                    Frequency.WEEKLY.ordinal -> getString(R.string.weeks)
+                    Frequency.MONTHLY.ordinal -> getString(R.string.months)
+                    Frequency.YEARLY.ordinal -> getString(R.string.years)
+                    else -> ""
+                }
+                intervalSuffixText.text = intervalSuffix
+
+                // Set appropriate maximum for interval picker
+                intervalPicker.maxValue = when (position) {
+                    Frequency.YEARLY.ordinal -> 5 // Limit to 5 years
+                    else -> 365 // Default high limit
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                // Handle no selection if needed
+            }
+        }
+
+        // 2. End Condition Radio Group Listener
+        endConditionGroup.setOnCheckedChangeListener { _, checkedId ->
+            when (checkedId) {
+                R.id.end_never -> {
+                    mRepeatLimit = 0L
+                    eventRepetitionLimit.visibility = View.GONE
+                }
+
+                R.id.end_after_occurrences -> {
+                    showOccurrenceCountPickerDialog()
+                    eventRepetitionLimit.visibility = View.VISIBLE
+                }
+
+                R.id.end_on_date -> {
+                    showEndDatePicker()
+                    eventRepetitionLimit.visibility = View.VISIBLE
+                }
+            }
+        }
+
+        // 3. Interval Picker Listener
+        intervalPicker.setOnValueChangedListener { _, oldVal, newVal ->
+            if (newVal > oldVal) {
+                intervalPicker.value = newVal.toInt()
+            }
+        }
+
+        // 4. Weekly Days Chip Group Listener
+        weeklyDaysGroup.setOnCheckedStateChangeListener { group, checkedIds ->
+            mRepeatRule = 0
+            checkedIds.forEach { chipId ->
+                mRepeatRule = mRepeatRule or when (chipId) {
+                    R.id.mon_chip -> MONDAY_BIT
+                    R.id.tue_chip -> TUESDAY_BIT
+                    R.id.wed_chip -> WEDNESDAY_BIT
+                    R.id.thu_chip -> THURSDAY_BIT
+                    R.id.fri_chip -> FRIDAY_BIT
+                    R.id.sat_chip -> SATURDAY_BIT
+                    R.id.sun_chip -> SUNDAY_BIT
+                    else -> 0
+                }
+            }
+        }
+
+        // 5. Expand/Collapse Toggle
+        eventRepetitionHeader.setOnClickListener {
+            val isExpanded = eventRepetitionAdvanced.visibility == View.VISIBLE
+            eventRepetitionAdvanced.visibility = if (isExpanded) View.GONE else View.VISIBLE
+            eventRepetitionExpandIcon.animate().rotation(if (isExpanded) 0f else 180f).start()
+        }
+
+        // Initialize default values
+        intervalPicker.minValue = 1
+        intervalPicker.value = 1
+        endConditionGroup.check(R.id.end_never)
+    }
+
+
+    private fun showOccurrenceCountPickerDialog() {
+        NumberPickerDialog(
+            context = this,
+            minValue = 1,
+            maxValue = 999,
+            currentValue = binding.intervalPicker.value
+        ) { count ->
+            mRepeatLimit = -count.toLong()
+            updateRepetitionLimitText()
+        }.show()
+    }
+
+    private fun showEndDatePicker() {
+        val picker = DatePickerDialog(
+            this,
+            { _, year, month, day ->
+                val selectedDate = DateTime().withDate(year, month + 1, day)
+                mRepeatLimit = selectedDate.seconds()
+                binding.eventRepetitionLimit.text = Formatter.getDate(this, selectedDate)
+            },
+            mEventStartDateTime.year,
+            mEventStartDateTime.monthOfYear - 1,
+            mEventStartDateTime.dayOfMonth
+        )
+        picker.datePicker.minDate = System.currentTimeMillis()
+        picker.show()
+    }
+
+    // Add these constants
+    private val MONDAY_BIT = 1 shl 0
+    private val TUESDAY_BIT = 1 shl 1
+    private val WEDNESDAY_BIT = 1 shl 2
+    private val THURSDAY_BIT = 1 shl 3
+    private val FRIDAY_BIT = 1 shl 4
+    private val SATURDAY_BIT = 1 shl 5
+    private val SUNDAY_BIT = 1 shl 6
+
+    enum class Frequency {
+        DAILY, WEEKLY, MONTHLY, YEARLY
+    }
+    //edit
+    private fun saveRecurrenceRules() {
+        val frequency = binding.recurrenceFrequency.selectedItemPosition
+        val interval = binding.intervalPicker.value
+        val daysBitmask = getSelectedDaysBitmask()
+
+        mRepeatInterval = when (frequency) {
+            Frequency.DAILY.ordinal -> interval
+            Frequency.WEEKLY.ordinal -> interval * 7
+            Frequency.MONTHLY.ordinal -> interval * 30
+            else -> 0
+        }
+
+        mRepeatRule = daysBitmask // Store selected days as bitmask
+    }
+    //edit
+    private fun getSelectedDaysBitmask(): Int {
+        var bitmask = 0
+        binding.weeklyDaysGroup.checkedChipIds.forEach { chipId ->
+            bitmask = bitmask or when (chipId) {
+                R.id.mon_chip -> MONDAY_BIT
+                R.id.tue_chip -> TUESDAY_BIT
+                R.id.wed_chip -> WEDNESDAY_BIT
+                R.id.thu_chip -> THURSDAY_BIT
+                R.id.fri_chip -> FRIDAY_BIT
+                R.id.sat_chip -> SATURDAY_BIT
+                R.id.sun_chip -> SUNDAY_BIT
+                else -> 0
+            }
+        }
+        return bitmask
+    }
+    //edit
+
+
+
+
+    private fun calculateRepeatRule(): Int {
+        return if (binding.recurrenceFrequency.selectedItemPosition == Frequency.WEEKLY.ordinal) {
+            // Weekly bitmask from chips
+            binding.weeklyDaysGroup.checkedChipIds.fold(0) { acc, chipId ->
+                acc or when (chipId) {
+                    R.id.mon_chip -> Event.MONDAY_BIT
+                    R.id.tue_chip -> Event.TUESDAY_BIT
+                    R.id.wed_chip -> Event.WEDNESDAY_BIT
+                    R.id.thu_chip -> Event.THURSDAY_BIT
+                    R.id.fri_chip -> Event.FRIDAY_BIT
+                    R.id.sat_chip -> Event.SATURDAY_BIT
+                    R.id.sun_chip -> Event.SUNDAY_BIT
+                    else -> 0
+                }
+            }
+        } else {
+            // For monthly/yearly rules
+            mRepeatRule
+        }
+    }
+
+    private fun calculateRepeatLimit(): Long {
+        return when (binding.endConditionGroup.checkedRadioButtonId) {
+            R.id.end_after_occurrences -> -binding.occurrenceCount.value.toLong()
+            R.id.end_on_date -> selectedEndDate.seconds()  // Use the stored DateTime
+            else -> 0L
         }
     }
 
@@ -1912,4 +2146,21 @@ class EventActivity : SimpleActivity() {
             getString(R.string.edit_event)
         }
     }
+
+
+
+
+
+
+    private fun updateRepetitionLimitText() {
+        binding.eventRepetitionLimit.text = when {
+            mRepeatLimit == 0L -> getString(R.string.never)
+            mRepeatLimit < 0 -> "${-mRepeatLimit} ${getString(R.string.occurrences)}"
+            else -> Formatter.getDate(this, DateTime(mRepeatLimit * 1000L))
+        }
+    }
+}
+
+enum class Frequency {
+    DAILY, WEEKLY, MONTHLY, YEARLY, CUSTOM
 }
